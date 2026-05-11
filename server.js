@@ -19,6 +19,7 @@ const bodyParser = require('body-parser');
 
 // Import routes
 const studentRoutes = require('./routes/studentRoutes');
+const schoolRoutes = require('./routes/schoolRoutes');
 
 // Initialize Express app
 const app = express();
@@ -67,6 +68,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       students: '/api/students',
+      schools: '/api/schools',
     },
   });
 });
@@ -77,6 +79,9 @@ app.get('/', (req, res) => {
 
 // Register student routes
 app.use('/api/students', studentRoutes);
+
+// Register school routes
+app.use('/api/schools', schoolRoutes);
 
 // ============================================
 // ERROR HANDLING - 404 Not Found
@@ -114,11 +119,18 @@ app.listen(PORT, () => {
   Available endpoints:
   • GET  /                    - Welcome message
   • GET  /api/health          - Server health check
+  
+  STUDENTS:
   • GET  /api/students        - Get all students
   • GET  /api/students/:id    - Get student by ID
   • POST /api/students        - Create new student
   • PUT  /api/students/:id    - Update student
   • DELETE /api/students/:id  - Delete student
+  
+  SCHOOLS:
+  • GET  /api/schools         - Get all schools
+  • GET  /api/schools/:id     - Get school by ID
+  • POST /api/schools/addSchool - Add new school
   
   Press CTRL+C to stop the server
   ════════════════════════════════════════

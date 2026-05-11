@@ -1,0 +1,11 @@
+meta {
+  name: addSchool
+  type: http
+  seq: 1
+}
+
+post {
+  url: fetch('http://localhost:5000/api/schools/addSchool', {   method: 'POST',   headers: { 'Content-Type': 'application/json' },   body: JSON.stringify({     name: 'Central High School',     address: '123 Main Street, Downtown',     latitude: 40.7128,     longitude: -74.0060   }) }) .then(r => r.json()) .then(data => console.log(data));
+  body: none
+  auth: none
+}
