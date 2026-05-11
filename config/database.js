@@ -1,17 +1,6 @@
-/**
- * Database Configuration
- * 
- * This file contains the MySQL database connection configuration
- * It uses environment variables for secure credentials management
- */
-
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-/**
- * Database Connection Pool
- * Using promise-based mysql2 for async/await support
- */
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -23,9 +12,6 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-/**
- * Test database connection
- */
 pool.getConnection()
   .then((connection) => {
     console.log('✅ Database connected successfully');
