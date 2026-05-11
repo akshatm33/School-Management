@@ -237,3 +237,99 @@ exports.getSchoolById = async (req, res) => {
     });
   }
 };
+
+exports.listSchools = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.query;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Latitude and longitude are required query parameters',
+        code: 'MISSING_COORDINATES',
+      });
+    }
+
+    const userLat = parseFloat(latitude);
+    const userLon = parseFloat(longitude);
+
+    if (isNaN(userLat)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Latitude must be a valid number',
+        code: 'INVALID_LATITUDE',
+      });
+    }
+
+    if (isNaN(userLon)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Longitude must be a valid number',
+        code: 'INVALID_LONGITUDE',
+      });
+    }
+
+    if (userLat < -90 || userLat > 90) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Latitude must be between -90 and 90',
+        code: 'LATITUDE_OUT_OF_RANGE',
+      });
+    }
+
+    if (userLon < -180 || userLon > 180) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Longitude must be between -180 and 180',
+        code: 'LONGITUDE_OUT_OF_RANGE',
+      });
+    }
+
+    const connection = await pool.getConnection();
+    const [schools] = await connection.query('SELECT * FROM schools');
+    connection.release();
+
+    if (schools.length === 0) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'No schools found',
+        count: 0,
+        data: [],
+      });
+    }
+
+    const schoolsWithDistance = schools.map((school) => {
+      const distance = calculateDistance(
+        userLat,
+        userLon,
+        school.latitude,
+        school.longitude
+      );
+
+      return {
+        ...school,
+        distance: parseFloat(distance.toFixed(2)),
+      };
+    });
+
+    const sortedSchools = schoolsWithDistance.sort((a, b) => a.distance - b.distance);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Schools retrieved and sorted by distance',
+      count: sortedSchools.length,
+      userLocation: {
+        latitude: userLat,
+        longitude: userLon,
+      },
+      data: sortedSchools,
+    });
+  } catch (error) {
+    console.error('Error listing schools:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving schools',
+      error: error.message,
+    });
+  }
+};
