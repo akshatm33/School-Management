@@ -7,15 +7,18 @@ A complete Node.js backend API built with Express.js and MySQL for managing scho
 ```
 school-management/
 ├── config/
-│   └── database.js          # MySQL database connection configuration
+│   ├── database.js          # Legacy database connection
+│   └── db.js                # MySQL database connection with pooling & error handling
 ├── controllers/
-│   └── studentController.js # Student business logic
+│   └── studentController.js # Student business logic (CRUD operations)
 ├── routes/
 │   └── studentRoutes.js     # Student API routes
 ├── utils/
 │   └── errorHandler.js      # Error handling utilities
 ├── server.js                # Main application entry point
-├── package.json             # Project dependencies
+├── schema.sql               # SQL schema for database & tables
+├── DATABASE_SETUP.md        # Step-by-step database setup guide
+├── package.json             # Project dependencies & scripts
 ├── .env                     # Environment variables (not in git)
 ├── .gitignore              # Git ignore rules
 └── README.md               # Project documentation
@@ -54,22 +57,11 @@ school-management/
    DB_PORT=3306
    ```
 
-4. **Create MySQL database**
-   ```sql
-   CREATE DATABASE school_management;
-   
-   USE school_management;
-   
-   CREATE TABLE students (
-     id INT PRIMARY KEY AUTO_INCREMENT,
-     name VARCHAR(100) NOT NULL,
-     email VARCHAR(100) UNIQUE NOT NULL,
-     phone VARCHAR(15),
-     grade VARCHAR(10),
-     age INT,
-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-   );
+4. **Set up MySQL Database**
+   - See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed instructions
+   - Or run the schema.sql file to create database and tables:
+   ```bash
+   mysql -u root -p < schema.sql
    ```
 
 ## 📦 Available Scripts
@@ -153,9 +145,11 @@ DELETE /api/students/:id
 ✅ CORS enabled for cross-origin requests  
 ✅ Middleware setup (JSON parsing, CORS, body-parser)  
 ✅ Error handling utilities  
-✅ Database connection pooling  
+✅ MySQL connection pooling with promise support  
+✅ Comprehensive database configuration (config/db.js)  
 ✅ RESTful API design  
 ✅ Example student controller and routes  
+✅ SQL schema file for quick database setup  
 
 ## 📝 Best Practices Implemented
 
@@ -164,8 +158,42 @@ DELETE /api/students/:id
 3. **Error Handling** - Centralized error handling utilities
 4. **Code Comments** - Well-commented code for easy understanding
 5. **RESTful Design** - Standard HTTP methods and status codes
-6. **Database Pooling** - Efficient database connection management
+6. **Database Pooling** - Efficient MySQL connection management with promise support
 7. **Async/Await** - Modern JavaScript promises handling
+8. **SQL Injection Prevention** - Parameterized queries throughout
+
+## 🗄️ Database Configuration
+
+The project includes a comprehensive MySQL configuration in `config/db.js`:
+
+- **Connection Pooling** - Reuses connections for better performance
+- **Error Logging** - Detailed error messages for debugging
+- **Helper Functions** - Easy query execution with `executeQuery()`
+- **Auto Connection Testing** - Tests database on server startup
+- **Graceful Shutdown** - Properly closes connections with `closePool()`
+
+### Using the Database Connection
+
+In your controllers:
+
+```javascript
+const { pool, executeQuery } = require('../config/db');
+
+// Method 1: Using the pool directly
+const connection = await pool.getConnection();
+const [results] = await connection.query('SELECT * FROM schools');
+connection.release();
+
+// Method 2: Using helper function
+const results = await executeQuery('SELECT * FROM schools WHERE id = ?', [1]);
+```
+
+### Database Tables
+
+- **schools** - School information with coordinates
+- **students** - Student records linked to schools
+
+See `schema.sql` for complete table structure.
 
 ## 🚨 Common Issues
 
@@ -173,6 +201,7 @@ DELETE /api/students/:id
 - Verify MySQL is running
 - Check DB credentials in .env file
 - Ensure database name exists
+- See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed troubleshooting
 
 ### Port Already in Use
 - Change the PORT in .env file
