@@ -1,53 +1,19 @@
-/**
- * School Management API - Main Server File
- * This is the entry point of the application
- * 
- * Configurations:
- * - Express.js server setup
- * - Middleware configuration
- * - Route initialization
- * - Port listening
- */
-
-// Load environment variables from .env file
 require('dotenv').config();
 
-// Import required packages
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
-// Import routes
 const studentRoutes = require('./routes/studentRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 
-// Initialize Express app
 const app = express();
 
-// ============================================
-// MIDDLEWARE CONFIGURATION
-// ============================================
-
-// Enable CORS (Cross-Origin Resource Sharing)
-// This allows requests from other domains
 app.use(cors());
-
-// Parse incoming request bodies as JSON
 app.use(express.json());
-
-// Alternative body parser middleware (already covered by express.json() in Express 4.16.0+)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ============================================
-// BASIC ROUTES
-// ============================================
-
-/**
- * Health Check Endpoint
- * GET /api/health
- * Returns: Server status information
- */
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'success',
@@ -56,11 +22,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-/**
- * Welcome Endpoint
- * GET /
- * Returns: Welcome message
- */
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to School Management API',
@@ -73,23 +34,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// ============================================
-// API ROUTES
-// ============================================
-
-// Register student routes
 app.use('/api/students', studentRoutes);
-
-// Register school routes
 app.use('/api/schools', schoolRoutes);
 
-// ============================================
-// ERROR HANDLING - 404 Not Found
-// ============================================
-
-/**
- * Handle 404 errors - Routes that don't exist
- */
 app.use((req, res) => {
   res.status(404).json({
     status: 'error',

@@ -1,33 +1,12 @@
-/**
- * School Controller
- * 
- * Contains all business logic for school-related operations
- * Handles requests from routes and sends responses
- */
-
-// Import database connection
 const { pool } = require('../config/db');
+const calculateDistance = require('../utils/distanceCalculator');
 
-/**
- * Add New School
- * POST /api/schools/addSchool
- * 
- * Creates a new school record in the database
- * 
- * @param {Object} req - Express request object with school data in body
- * @param {Object} res - Express response object
- * @returns {JSON} Newly created school object
- */
+// Example: const distance = calculateDistance(40.7128, -74.0060, 34.0522, -118.2437); // ~3944 km
+
 exports.addSchool = async (req, res) => {
   try {
-    // Extract school data from request body
     const { name, address, latitude, longitude } = req.body;
 
-    // ============================================
-    // VALIDATION: Check required fields
-    // ============================================
-
-    // Check if name is provided and not empty
     if (!name || name.trim() === '') {
       return res.status(400).json({
         status: 'error',
@@ -36,7 +15,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Check if address is provided and not empty
     if (!address || address.trim() === '') {
       return res.status(400).json({
         status: 'error',
@@ -45,11 +23,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // ============================================
-    // VALIDATION: Check coordinates are valid numbers
-    // ============================================
-
-    // Validate latitude
     if (latitude === undefined || latitude === null || latitude === '') {
       return res.status(400).json({
         status: 'error',
@@ -58,7 +31,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Convert latitude to number and validate it's a valid number
     const latValue = parseFloat(latitude);
     if (isNaN(latValue)) {
       return res.status(400).json({
@@ -68,7 +40,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Check latitude is within valid range (-90 to 90)
     if (latValue < -90 || latValue > 90) {
       return res.status(400).json({
         status: 'error',
@@ -77,7 +48,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Validate longitude
     if (longitude === undefined || longitude === null || longitude === '') {
       return res.status(400).json({
         status: 'error',
@@ -86,7 +56,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Convert longitude to number and validate it's a valid number
     const lonValue = parseFloat(longitude);
     if (isNaN(lonValue)) {
       return res.status(400).json({
@@ -96,7 +65,6 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // Check longitude is within valid range (-180 to 180)
     if (lonValue < -180 || lonValue > 180) {
       return res.status(400).json({
         status: 'error',
@@ -105,18 +73,8 @@ exports.addSchool = async (req, res) => {
       });
     }
 
-    // ============================================
-    // DATABASE OPERATIONS
-    // ============================================
-
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // SQL query to insert new school
-    const query =
-      'INSERT INTO schools (name, address, latitude, longitude) VALUES (?, ?, ?, ?)';
-
-    // Execute query with parameters (prevents SQL injection)
+    const query = 'INSERT INTO schools (name, address, latitude, longitude) VALUES (?, ?, ?, ?)';
     const [result] = await connection.query(query, [
       name.trim(),
       address.trim(),
@@ -124,13 +82,7 @@ exports.addSchool = async (req, res) => {
       lonValue,
     ]);
 
-    // Release connection back to pool
     connection.release();
-
-    // ============================================
-    // SEND SUCCESS RESPONSE
-    // ============================================
-
     res.status(201).json({
       status: 'success',
       message: 'School added successfully',

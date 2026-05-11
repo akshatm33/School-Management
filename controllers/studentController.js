@@ -1,30 +1,9 @@
-/**
- * Student Controller
- * 
- * Contains all business logic for student-related operations
- * Handles requests from routes and sends responses
- */
-
-// Import database pool
 const pool = require('../config/database');
 
-/**
- * Get All Students
- * GET /api/students
- * 
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {JSON} Array of all students
- */
 exports.getAllStudents = async (req, res) => {
   try {
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // Query to fetch all students
     const [students] = await connection.query('SELECT * FROM students');
-
-    // Release connection back to pool
     connection.release();
 
     // Send successful response
@@ -44,20 +23,10 @@ exports.getAllStudents = async (req, res) => {
   }
 };
 
-/**
- * Get Student by ID
- * GET /api/students/:id
- * 
- * @param {Object} req - Express request object with ID parameter
- * @param {Object} res - Express response object
- * @returns {JSON} Single student object
- */
 exports.getStudentById = async (req, res) => {
   try {
-    // Get student ID from URL parameters
     const { id } = req.params;
 
-    // Validate ID
     if (!id || isNaN(id)) {
       return res.status(400).json({
         status: 'error',
@@ -65,19 +34,10 @@ exports.getStudentById = async (req, res) => {
       });
     }
 
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // Query to fetch specific student
-    const [student] = await connection.query(
-      'SELECT * FROM students WHERE id = ?',
-      [id]
-    );
-
-    // Release connection
+    const [student] = await connection.query('SELECT * FROM students WHERE id = ?', [id]);
     connection.release();
 
-    // Check if student exists
     if (student.length === 0) {
       return res.status(404).json({
         status: 'error',
@@ -101,20 +61,10 @@ exports.getStudentById = async (req, res) => {
   }
 };
 
-/**
- * Create New Student
- * POST /api/students
- * 
- * @param {Object} req - Express request object with student data in body
- * @param {Object} res - Express response object
- * @returns {JSON} Newly created student object
- */
 exports.createStudent = async (req, res) => {
   try {
-    // Extract student data from request body
     const { name, email, phone, grade, age } = req.body;
 
-    // Validate required fields
     if (!name || !email) {
       return res.status(400).json({
         status: 'error',
@@ -122,19 +72,13 @@ exports.createStudent = async (req, res) => {
       });
     }
 
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // Insert new student into database
     const [result] = await connection.query(
       'INSERT INTO students (name, email, phone, grade, age) VALUES (?, ?, ?, ?, ?)',
       [name, email, phone || null, grade || null, age || null]
     );
-
-    // Release connection
     connection.release();
 
-    // Send successful response
     res.status(201).json({
       status: 'success',
       message: 'Student created successfully',
