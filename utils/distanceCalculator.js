@@ -4,6 +4,7 @@ function degreesToRadians(degrees) {
   return degrees * (Math.PI / 180);
 }
 
+// Uses Haversine formula to calculate distance between two geographic points
 function calculateDistance(latitude1, longitude1, latitude2, longitude2) {
   const lat1Rad = degreesToRadians(latitude1);
   const lon1Rad = degreesToRadians(longitude1);

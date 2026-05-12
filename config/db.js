@@ -42,8 +42,6 @@ async function executeQuery(query, params = []) {
   let connection;
   try {
     connection = await pool.getConnection();
-    
-    // Execute query with parameters (prevents SQL injection)
     const [results] = await connection.query(query, params);
     return results;
   } catch (error) {

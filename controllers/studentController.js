@@ -1,4 +1,5 @@
-const pool = require('../config/database');
+const { pool } = require('../config/db');
+const { validateStudentData, validateId } = require('../utils/validators');
 
 exports.getAllStudents = async (req, res) => {
   try {
@@ -6,19 +7,28 @@ exports.getAllStudents = async (req, res) => {
     const [students] = await connection.query('SELECT * FROM students');
     connection.release();
 
-    // Send successful response
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Students retrieved successfully',
+      statusCode: 200,
       count: students.length,
       data: students,
     });
   } catch (error) {
-    console.error('Error fetching students:', error);
+    console.error('❌ Error fetching students:', error.message);
+
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection lost',
+        statusCode: 503,
+      });
+    }
+
     res.status(500).json({
-      status: 'error',
+      success: false,
       message: 'Error retrieving students',
-      error: error.message,
+      statusCode: 500,
     });
   }
 };
@@ -27,10 +37,12 @@ exports.getStudentById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    const idValidation = validateId(id);
+    if (!idValidation.isValid) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid student ID',
+        success: false,
+        message: idValidation.error,
+        statusCode: 400,
       });
     }
 
@@ -40,23 +52,33 @@ exports.getStudentById = async (req, res) => {
 
     if (student.length === 0) {
       return res.status(404).json({
-        status: 'error',
+        success: false,
         message: 'Student not found',
+        statusCode: 404,
       });
     }
 
-    // Send successful response
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Student retrieved successfully',
+      statusCode: 200,
       data: student[0],
     });
   } catch (error) {
-    console.error('Error fetching student:', error);
+    console.error('❌ Error fetching student:', error.message);
+
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection lost',
+        statusCode: 503,
+      });
+    }
+
     res.status(500).json({
-      status: 'error',
+      success: false,
       message: 'Error retrieving student',
-      error: error.message,
+      statusCode: 500,
     });
   }
 };
@@ -65,10 +87,12 @@ exports.createStudent = async (req, res) => {
   try {
     const { name, email, phone, grade, age } = req.body;
 
-    if (!name || !email) {
+    const validation = validateStudentData({ name, email, phone, grade, age });
+    if (!validation.isValid) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Name and email are required fields',
+        success: false,
+        message: validation.error,
+        statusCode: 400,
       });
     }
 
@@ -80,9 +104,9 @@ exports.createStudent = async (req, res) => {
     connection.release();
 
     res.status(201).json({
-      status: 'success',
+      success: true,
       message: 'Student created successfully',
-      id: result.insertId,
+      statusCode: 201,
       data: {
         id: result.insertId,
         name,
@@ -93,61 +117,65 @@ exports.createStudent = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error creating student:', error);
+    console.error('❌ Error creating student:', error.message);
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        success: false,
+        message: 'Student email already exists',
+        statusCode: 409,
+      });
+    }
+
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection lost',
+        statusCode: 503,
+      });
+    }
+
     res.status(500).json({
-      status: 'error',
+      success: false,
       message: 'Error creating student',
-      error: error.message,
+      statusCode: 500,
     });
   }
 };
 
-/**
- * Update Student
- * PUT /api/students/:id
- * 
- * @param {Object} req - Express request object with ID and update data
- * @param {Object} res - Express response object
- * @returns {JSON} Updated student object
- */
 exports.updateStudent = async (req, res) => {
   try {
-    // Get student ID from URL parameters
     const { id } = req.params;
     const { name, email, phone, grade, age } = req.body;
 
-    // Validate ID
-    if (!id || isNaN(id)) {
+    const idValidation = validateId(id);
+    if (!idValidation.isValid) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid student ID',
+        success: false,
+        message: idValidation.error,
+        statusCode: 400,
       });
     }
 
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // Update student in database
     const [result] = await connection.query(
       'UPDATE students SET name = ?, email = ?, phone = ?, grade = ?, age = ? WHERE id = ?',
       [name, email, phone || null, grade || null, age || null, id]
     );
-
-    // Release connection
     connection.release();
 
-    // Check if any rows were affected
     if (result.affectedRows === 0) {
       return res.status(404).json({
-        status: 'error',
+        success: false,
         message: 'Student not found',
+        statusCode: 404,
       });
     }
 
-    // Send successful response
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Student updated successfully',
+      statusCode: 200,
       data: {
         id,
         name,
@@ -158,68 +186,80 @@ exports.updateStudent = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error updating student:', error);
+    console.error('❌ Error updating student:', error.message);
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        success: false,
+        message: 'Student email already exists',
+        statusCode: 409,
+      });
+    }
+
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection lost',
+        statusCode: 503,
+      });
+    }
+
     res.status(500).json({
-      status: 'error',
+      success: false,
       message: 'Error updating student',
-      error: error.message,
+      statusCode: 500,
     });
   }
 };
 
-/**
- * Delete Student
- * DELETE /api/students/:id
- * 
- * @param {Object} req - Express request object with ID parameter
- * @param {Object} res - Express response object
- * @returns {JSON} Success message
- */
 exports.deleteStudent = async (req, res) => {
   try {
-    // Get student ID from URL parameters
     const { id } = req.params;
 
-    // Validate ID
-    if (!id || isNaN(id)) {
+    const idValidation = validateId(id);
+    if (!idValidation.isValid) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid student ID',
+        success: false,
+        message: idValidation.error,
+        statusCode: 400,
       });
     }
 
-    // Get connection from pool
     const connection = await pool.getConnection();
-
-    // Delete student from database
-    const [result] = await connection.query(
-      'DELETE FROM students WHERE id = ?',
-      [id]
-    );
-
-    // Release connection
+    const [result] = await connection.query('DELETE FROM students WHERE id = ?', [id]);
     connection.release();
 
-    // Check if any rows were affected
     if (result.affectedRows === 0) {
       return res.status(404).json({
-        status: 'error',
+        success: false,
         message: 'Student not found',
+        statusCode: 404,
       });
     }
 
-    // Send successful response
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Student deleted successfully',
-      id,
+      statusCode: 200,
+      data: {
+        id,
+      },
     });
   } catch (error) {
-    console.error('Error deleting student:', error);
+    console.error('❌ Error deleting student:', error.message);
+
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection lost',
+        statusCode: 503,
+      });
+    }
+
     res.status(500).json({
-      status: 'error',
+      success: false,
       message: 'Error deleting student',
-      error: error.message,
+      statusCode: 500,
     });
   }
 };
