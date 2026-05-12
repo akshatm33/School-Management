@@ -1,0 +1,974 @@
+{
+  "info": {
+    "name": "School Management API",
+    "description": "Complete API for managing schools and students with validation, error handling, and production-ready features.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Status",
+      "description": "Endpoints for API health monitoring",
+      "item": [
+        {
+          "name": "Root Endpoint",
+          "description": "Welcome endpoint with API information and available endpoints",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                ""
+              ]
+            },
+            "description": "Get API welcome message and version information"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Welcome to School Management API\",\n  \"statusCode\": 200,\n  \"data\": {\n    \"version\": \"1.0.0\",\n    \"endpoints\": {\n      \"schools\": \"/api/schools\",\n      \"students\": \"/api/students\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Health Check",
+          "description": "Check server and database health status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Verify API is running and database is connected"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/health",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "health"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Health check successful\",\n  \"timestamp\": \"2024-05-12T10:30:45.123Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schools",
+      "description": "School management endpoints - Create, read, update, delete schools",
+      "item": [
+        {
+          "name": "Create School",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"school_id\", jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"St. Mary's High School\",\n  \"address\": \"123 Main Street, New York, NY 10001\",\n  \"latitude\": 40.7128,\n  \"longitude\": -74.0060\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/schools/addSchool",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "schools",
+                "addSchool"
+              ]
+            },
+            "description": "Create a new school record with name, address, and geographic coordinates"
+          },
+          "response": [
+            {
+              "name": "Created (201)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"St. Mary's High School\",\n  \"address\": \"123 Main Street, New York, NY 10001\",\n  \"latitude\": 40.7128,\n  \"longitude\": -74.0060\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/schools/addSchool",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools",
+                    "addSchool"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"School added successfully\",\n  \"statusCode\": 201,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"St. Mary's High School\",\n    \"address\": \"123 Main Street, New York, NY 10001\",\n    \"latitude\": 40.7128,\n    \"longitude\": -74.0060\n  }\n}"
+            },
+            {
+              "name": "Bad Request - Invalid Latitude (400)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test School\",\n  \"address\": \"123 Main Street\",\n  \"latitude\": 95,\n  \"longitude\": -74.0060\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/schools/addSchool",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools",
+                    "addSchool"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Latitude must be between -90 and 90\",\n  \"statusCode\": 400\n}"
+            },
+            {
+              "name": "Duplicate School (409)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"St. Mary's High School\",\n  \"address\": \"123 Main Street, New York, NY 10001\",\n  \"latitude\": 40.7128,\n  \"longitude\": -74.0060\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/schools/addSchool",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools",
+                    "addSchool"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"School already exists\",\n  \"statusCode\": 409\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Schools",
+          "description": "Retrieve all schools in the database",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/schools",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "schools"
+              ]
+            },
+            "description": "Get all schools with their details"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/schools",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schools retrieved successfully\",\n  \"statusCode\": 200,\n  \"count\": 2,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"St. Mary's High School\",\n      \"address\": \"123 Main Street, New York, NY 10001\",\n      \"latitude\": 40.7128,\n      \"longitude\": -74.0060\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Lincoln High School\",\n      \"address\": \"456 Oak Avenue, Boston, MA 02101\",\n      \"latitude\": 42.3601,\n      \"longitude\": -71.0589\n    }\n  ]\n}"
+            },
+            {
+              "name": "Empty List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/schools",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schools retrieved successfully\",\n  \"statusCode\": 200,\n  \"count\": 0,\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get School by ID",
+          "description": "Retrieve a specific school by its ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/schools/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "schools",
+                "1"
+              ]
+            },
+            "description": "Get details of a specific school by ID"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/schools/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"School retrieved successfully\",\n  \"statusCode\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"St. Mary's High School\",\n    \"address\": \"123 Main Street, New York, NY 10001\",\n    \"latitude\": 40.7128,\n    \"longitude\": -74.0060\n  }\n}"
+            },
+            {
+              "name": "Not Found (404)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/schools/99999",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "schools",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"School not found\",\n  \"statusCode\": 404,\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "description": "Student management endpoints - Create, read, update, delete student records",
+      "item": [
+        {
+          "name": "Create Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"student_id\", jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"555-123-4567\",\n  \"grade\": \"10A\",\n  \"age\": 16\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/students",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "students"
+              ]
+            },
+            "description": "Create a new student record with name, email, phone, grade, and age"
+          },
+          "response": [
+            {
+              "name": "Created (201)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"555-123-4567\",\n  \"grade\": \"10A\",\n  \"age\": 16\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/students",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Student created successfully\",\n  \"statusCode\": 201,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"555-123-4567\",\n    \"grade\": \"10A\",\n    \"age\": 16\n  }\n}"
+            },
+            {
+              "name": "Invalid Email (400)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"invalid-email\",\n  \"phone\": \"555-123-4567\",\n  \"grade\": \"10A\",\n  \"age\": 16\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/students",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email format\",\n  \"statusCode\": 400\n}"
+            },
+            {
+              "name": "Duplicate Email (409)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"555-987-6543\",\n  \"grade\": \"10B\",\n  \"age\": 16\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/students",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Email already exists\",\n  \"statusCode\": 409\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Students",
+          "description": "Retrieve all students in the database",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "students"
+              ]
+            },
+            "description": "Get all students with their details"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Students retrieved successfully\",\n  \"statusCode\": 200,\n  \"count\": 2,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"phone\": \"555-123-4567\",\n      \"grade\": \"10A\",\n      \"age\": 16\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Jane Smith\",\n      \"email\": \"jane.smith@example.com\",\n      \"phone\": \"555-987-6543\",\n      \"grade\": \"10B\",\n      \"age\": 16\n    }\n  ]\n}"
+            },
+            {
+              "name": "Empty List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Students retrieved successfully\",\n  \"statusCode\": 200,\n  \"count\": 0,\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Student by ID",
+          "description": "Retrieve a specific student by their ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "students",
+                "1"
+              ]
+            },
+            "description": "Get details of a specific student by ID"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Student retrieved successfully\",\n  \"statusCode\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"555-123-4567\",\n    \"grade\": \"10A\",\n    \"age\": 16\n  }\n}"
+            },
+            {
+              "name": "Not Found (404)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students/99999",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Student not found\",\n  \"statusCode\": 404,\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Student",
+          "description": "Update student information by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"555-999-8888\",\n  \"grade\": \"11A\",\n  \"age\": 17\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "students",
+                "1"
+              ]
+            },
+            "description": "Update an existing student's details"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"555-999-8888\",\n  \"grade\": \"11A\",\n  \"age\": 17\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/students/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Student updated successfully\",\n  \"statusCode\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.updated@example.com\",\n    \"phone\": \"555-999-8888\",\n    \"grade\": \"11A\",\n    \"age\": 17,\n    \"updated_at\": \"2024-05-12T10:45:30.123Z\"\n  }\n}"
+            },
+            {
+              "name": "Not Found (404)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test\",\n  \"email\": \"test@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:5000/api/students/99999",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Student not found\",\n  \"statusCode\": 404,\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Student",
+          "description": "Delete a student record by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "students",
+                "1"
+              ]
+            },
+            "description": "Permanently delete a student record"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Student deleted successfully\",\n  \"statusCode\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"deletedAt\": \"2024-05-12T10:50:12.456Z\"\n  }\n}"
+            },
+            {
+              "name": "Not Found (404)",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5000/api/students/99999",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5000",
+                  "path": [
+                    "api",
+                    "students",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Student not found\",\n  \"statusCode\": 404,\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "id": "base_url",
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "default"
+    },
+    {
+      "id": "school_id",
+      "key": "school_id",
+      "value": "1",
+      "type": "default"
+    },
+    {
+      "id": "student_id",
+      "key": "student_id",
+      "value": "1",
+      "type": "default"
+    }
+  ]
+}
