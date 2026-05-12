@@ -195,7 +195,40 @@ const results = await executeQuery('SELECT * FROM schools WHERE id = ?', [1]);
 
 See `schema.sql` for complete table structure.
 
-## 🚨 Common Issues
+## � Deployment
+
+This API is production-ready and can be deployed to the cloud. For detailed deployment instructions:
+
+**→ [Read the Full Deployment Guide](./DEPLOYMENT.md)**
+
+### Quick Deployment Summary
+
+**Render** (Free tier available)
+- Push code to GitHub
+- Connect repository to Render
+- Set environment variables
+- Auto-deploys on push ✅
+
+**Railway** (Modern & simple)
+- Connect GitHub account
+- Select repository
+- Railway auto-configures database
+- Auto-deploys on push ✅
+
+### Environment Variables for Production
+- Copy from `.env.example` and update values
+- Store in platform environment settings (not in code)
+- Never commit `.env` file to git
+
+### Pre-Deployment Checklist
+- [ ] `.env.example` configured with your settings
+- [ ] Database created and tables initialized
+- [ ] `npm start` tested locally
+- [ ] All endpoints tested with Postman/Bruno
+- [ ] `.env` added to `.gitignore`
+- [ ] Code pushed to GitHub
+
+## �🚨 Common Issues
 
 ### Database Connection Failed
 - Verify MySQL is running
